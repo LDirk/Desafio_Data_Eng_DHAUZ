@@ -48,6 +48,7 @@ df_raw_transactions_fee.createOrReplaceTempView("raw_transactions_fee")
 
 df_0= spark.sql("SELECT * FROM raw_transactions_table").show()
 df_1= spark.sql("SELECT * FROM raw_transactions_fee").show()   
+# df_0= spark.sql("SELECT IdTransaction, count(IdTransaction) FROM raw_transactions_table group by IdTransaction  HAVING COUNT(*) > 2").show()
 
 
 
