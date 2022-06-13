@@ -1,0 +1,53 @@
+# pip install pymysql
+# pip install pyspark
+
+
+import pandas as pd
+import pymysql
+from pyspark.sql import SparkSession
+
+# Conectando a base 
+
+db = pymysql.connect(host='dhauz-instance.cutloqirhpd7.us-east-1.rds.amazonaws.com',user='candidate_user',password='D3@bGh664%$1VHv*')
+cursor = db.cursor()
+
+sql = ''' select * from db_hiring_test.raw_transactions_table '''
+sql_2 = ''' select * from db_hiring_test.raw_transactions_fee '''
+
+cursor.execute(sql)
+raw_transactions_table = cursor.fetchall()
+
+cursor.execute(sql_2)
+raw_transactions_fee = cursor.fetchall() 
+
+# Criando o Pandas DataFrame para arrumar os dados. 
+
+df_raw_transactions_table = pd.DataFrame(raw_transactions_table)
+df_raw_transactions_table.columns = ['IdTransaction', 'AddressOrigin','AddressDestination','TotalSend','Status',"SentDate","ImportDate"]
+
+df_raw_transactions_fee = pd.DataFrame(raw_transactions_fee)
+df_raw_transactions_fee.columns = ['range-start','range-end','fee-percentage']
+
+spark = SparkSession \
+    .builder \
+    .appName("Python Spark SQL basic example") \
+    .config("spark.some.config.option", "some-value") \
+    .getOrCreate()
+    
+# Criando o Spark DataFrame para utilizar consultas SqL
+
+df_raw_transactions_table = spark.createDataFrame(df_raw_transactions_table)
+df_raw_transactions_table.createOrReplaceTempView("raw_transactions_table")
+
+
+df_raw_transactions_fee = spark.createDataFrame(df_raw_transactions_fee)
+df_raw_transactions_fee.createOrReplaceTempView("raw_transactions_fee")    
+   
+   
+# Criando o SparkSql para utilizar consultas SqL
+
+df_0= spark.sql("SELECT * FROM raw_transactions_table").show()
+df_1= spark.sql("SELECT * FROM raw_transactions_fee").show()   
+
+
+
