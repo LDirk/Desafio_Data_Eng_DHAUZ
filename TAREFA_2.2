@@ -33,7 +33,7 @@ where SentDate>="2021-02-01" and SentDate>="2021-02-31"
 ''')
 base_taxas.createOrReplaceTempView("base_taxas")  
 
-# Filtrando o mes de janeiro 
+# Filtrando o mes de FEV
 base_taxas_carteira = spark.sql('''
 select 
 AddressOrigin,
