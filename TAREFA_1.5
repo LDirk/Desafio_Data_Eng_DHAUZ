@@ -1,0 +1,60 @@
+# Qual a carteira com o maior saldo final?
+# ImportDate, como não sei o que significa essa variável, irei considerar dois depositos para importDate diferentes, mesmo com o mesmo ID 
+
+#Quantidade de recebíveis.
+df_1_3_0 = spark.sql('''
+select 
+AddressDestination,
+double(sum(replace(TotalSend,',',''))) as Total_recebido
+from
+raw_transactions_table
+where AddressDestination is not null
+group by 1
+''')
+df_1_3_0.createOrReplaceTempView("df_1_3_0")  
+ 
+# Quantidade que saiu 
+df_1_3_1 = spark.sql('''
+select 
+AddressOrigin,
+double(sum(replace(TotalSend,',',''))) as TotalSend_enviado
+from
+raw_transactions_table
+where AddressDestination is not null
+group by 1
+''')
+df_1_3_1.createOrReplaceTempView("df_1_3_1")  
+
+
+#Left join 
+df_1_3_2 = spark.sql('''
+select 
+  A.*,
+  B.*
+FROM  df_1_3_0 AS A
+LEFT JOIN df_1_3_1 AS B
+ON 
+A.AddressDestination= B.AddressOrigin 
+''')
+df_1_3_2.createOrReplaceTempView("df_1_3_2") 
+
+# Saldo final 
+df_1_3_3 = spark.sql('''
+select 
+  AddressDestination as Address, 
+  Total_recebido-TotalSend_enviado as saldo,
+  Total_recebido,
+  TotalSend_enviado
+from
+df_1_3_2
+''')
+df_1_3_3.createOrReplaceTempView("df_1_3_3") 
+
+#  O endereço com maior saldo final 
+df_1_3_4 = spark.sql('''
+select 
+*
+from
+df_1_3_3
+where saldo in (select max(saldo) from df_1_3_3)
+''').show()
