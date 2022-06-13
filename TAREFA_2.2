@@ -1,0 +1,54 @@
+# Considerando que a carteira origem é responsável por pagar as taxas de envio, qual carteira
+# seria responsável pelo maior pagamento de taxas em FEVEREIRO de 2021?
+
+
+df_1_3_0 = spark.sql('''
+select 
+IdTransaction,
+AddressOrigin,
+AddressDestination,
+replace(TotalSend,',','') as TotalSend,
+Status,
+Cast(SentDate as date) as SentDate,
+cast(ImportDate as date) as ImportDate
+from
+raw_transactions_table
+''')
+df_1_3_0.createOrReplaceTempView("df_1_3_0")  
+
+# Criando o valor das taxas pagas e filtrando o mes de FEVEREIRO
+base_taxas = spark.sql('''
+select 
+*,
+CASE
+  WHEN TotalSend >0 AND TotalSend <= 160000.00 THEN TotalSend*0.10
+  WHEN TotalSend>160000.0000000000 and TotalSend <= 340000.0 then TotalSend*0.8
+  when TotalSend>340000.0         and TotalSend <= 500000.0 then TotalSend*0.6
+  when TotalSend>500000.0        and TotalSend <= 670000.0 then TotalSend*0.5
+  when TotalSend>670000.0        and TotalSend <= 833000.0 then TotalSend*0.4
+  when TotalSend>833000.0       and TotalSend <= 99000000.00000000 then TotalSend*0.2
+end as taxas
+FROM df_1_3_0
+where SentDate>="2021-02-01" and SentDate>="2021-02-31"
+''')
+base_taxas.createOrReplaceTempView("base_taxas")  
+
+# Filtrando o mes de janeiro 
+base_taxas_carteira = spark.sql('''
+select 
+AddressOrigin,
+sum(taxas) as taxas
+FROM base_taxas
+group by 1
+''')
+base_taxas_carteira.createOrReplaceTempView("base_taxas_carteira")  
+
+# Resposta Final, a carteira que mais pagou taxas em FEVEREIRO foi: 
+# VAZIO, POIS fez operação em fevereiro, mas a query seria essa. 
+base_taxas_carteira = spark.sql('''
+select 
+*
+FROM base_taxas_carteira
+where
+taxas in (select max(taxas) from base_taxas_carteira)
+''').show()
