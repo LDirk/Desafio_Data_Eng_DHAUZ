@@ -1,0 +1,24 @@
+# Qual é o dia do mês com maior volume de transações realizadas? 
+
+# Criando a tabela temporária das datas agrupadas com todos os valores enviados. 
+df_1_2_0 = spark.sql('''
+select 
+  max(TotalSend) as TotalSend,
+  CAST(SentDate AS DATE)
+from 
+raw_transactions_table
+where Status = "Confirmed" 
+group by 2
+order by SentDate desc
+''')
+df_1_2_0.createOrReplaceTempView("df_1_2_0")  
+
+df_1_2_1 = spark.sql(''' 
+select 
+  dayofmonth(SentDate) as day
+from 
+df_1_2_0
+where 
+TotalSend in ( select max(TotalSend) from df_1_2_0)
+'''
+).show()
