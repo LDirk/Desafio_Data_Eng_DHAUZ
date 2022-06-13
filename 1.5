@@ -1,0 +1,11 @@
+# Quais transações possuem condições atípicas e precisam ser validadas com o time responsável pela disponibilização dos dados?
+
+# Interpreto como transação atípica aquela que o Status = Pending ou Status = Denied
+# Com isso, as transações com comportamento atípico são:
+df_1_3_0 = spark.sql('''
+select 
+*
+from
+raw_transactions_table
+where Status in ("Pending","Denied")
+''').show()
