@@ -1,0 +1,26 @@
+# Em qual dia da semana geralmente mais transações são realizadas?
+
+
+# Criando a tabela temporária das datas agrupadas com todos os ID(para medir volume de transações). 
+df_1_3_0 = spark.sql('''
+select 
+  IdTransaction,
+  dayofmonth(SentDate) as day
+from 
+raw_transactions_table
+where Status = "Confirmed" 
+
+''')
+df_1_3_0.createOrReplaceTempView("df_1_3_0")  
+
+
+df_1_3_1 = spark.sql('''
+select
+  day,
+  count(day) as contador
+from 
+df_1_3_0
+group by 1 
+order by contador desc
+''').show()
+# O dia com mais transações é o dia 7
