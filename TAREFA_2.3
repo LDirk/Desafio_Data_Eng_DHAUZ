@@ -30,7 +30,7 @@ FROM df_1_3_0
 ''')
 base_taxas.createOrReplaceTempView("base_taxas")  
 
-# Filtrando o mes de janeiro 
+
 base_taxas_carteira = spark.sql('''
 select 
 AddressOrigin,
