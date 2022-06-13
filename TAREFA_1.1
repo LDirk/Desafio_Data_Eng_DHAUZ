@@ -1,0 +1,11 @@
+#1.1 - Qual é o endereço (carteira) com maior volume de transações enviadas?
+
+df_1_1_0 = spark.sql('''
+select 
+  *
+from 
+raw_transactions_table
+where 
+TotalSend in 
+(select max(TotalSend) FROM raw_transactions_table where Status = "Confirmed" )
+''').show()
